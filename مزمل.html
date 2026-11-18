@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>دستیار زنده‌ی کلاس</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0b1214;--card:#121c1f;--line:#1f2e33;--text:#e6f1f2;--mute:#8aa3a8;--acc:#2ee6b6;--acc2:#1aa883;--warn:#ffb547;--red:#ff5d6c}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--text);font-family:Vazirmatn,system-ui,sans-serif}
+  body{padding:14px 14px 130px;max-width:720px;margin:0 auto}
+  h1{font-size:20px;margin:4px 0 2px;font-weight:800}
+  .sub{color:var(--mute);font-size:13px;margin-bottom:12px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:12px}
+  label{font-size:13px;color:var(--mute);display:block;margin-bottom:3px}
+  select,input[type=text],input[type=password]{background:#0d1719;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:9px 10px;font:inherit;font-size:14px;width:100%}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .toggle{display:flex;align-items:center;gap:8px;font-size:14px}
+  .toggle input{width:20px;height:20px;accent-color:var(--acc)}
+  .sbtn{background:none;border:1px solid var(--line);color:var(--mute);border-radius:8px;padding:3px 8px;font:inherit;font-size:12px}
+  #transcript{min-height:90px;max-height:32vh;overflow:auto;font-size:15px;line-height:1.9}
+  .seg{display:block;padding:2px 6px;border-radius:8px;cursor:pointer;unicode-bidi:plaintext}
+  .seg:active{background:#18292d}
+  .seg.q{border-right:3px solid var(--warn);background:#1d2418}
+  #partial{color:var(--mute);font-style:italic;unicode-bidi:plaintext;display:block}
+  .empty{color:var(--mute);font-size:14px}
+  .ans{border:1px solid #23463d;background:#0f201c;border-radius:14px;padding:10px 12px;margin-bottom:10px}
+  .ans .q{font-size:13px;color:var(--warn);margin-bottom:6px;unicode-bidi:plaintext}
+  .ans .a{font-size:16px;line-height:1.9;white-space:pre-wrap;unicode-bidi:plaintext}
+  .ans .meta{display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:12px;color:var(--mute)}
+  .thinking{color:var(--mute)}
+  .bar{position:fixed;left:0;right:0;bottom:0;background:linear-gradient(transparent,var(--bg) 25%);padding:16px 14px 14px}
+  .bar .in{max-width:720px;margin:0 auto;display:flex;gap:8px;align-items:center}
+  #mic{flex:0 0 auto;width:66px;height:66px;border-radius:50%;border:none;background:var(--acc);color:#04201a;font-size:28px}
+  #mic.on{background:var(--red);color:#fff;animation:pulse 1.6s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,93,108,.55)}70%{box-shadow:0 0 0 16px rgba(255,93,108,0)}100%{box-shadow:0 0 0 0 rgba(255,93,108,0)}}
+  .btn{flex:1;border:none;border-radius:14px;padding:13px 8px;font:inherit;font-weight:600;font-size:14px;background:#1c3a33;color:var(--acc)}
+  .langs{display:flex;flex-direction:column;gap:4px}
+  .lb{border:1px solid var(--line);background:#0d1719;color:var(--mute);border-radius:10px;padding:5px 8px;font:inherit;font-size:12px}
+  .lb.sel{background:var(--acc2);color:#fff;border-color:var(--acc2)}
+  #status{font-size:13px;color:var(--mute);margin:6px 2px 10px}
+  #status.err{color:var(--warn)}
+  .tiny{font-size:12px;color:var(--mute);line-height:1.8}
+  .ask{display:flex;gap:8px;margin-top:8px}
+  .ask button{flex:0 0 auto;border:none;border-radius:10px;background:var(--acc2);color:#fff;font:inherit;padding:0 14px}
+  a{color:var(--acc)}
+</style>
+</head>
+<body>
+  <h1>🎧 دستیار زنده‌ی کلاس</h1>
+  <div class="sub">صدای استاد را می‌شنود، به متن تبدیل می‌کند و هر سؤال را خودکار جواب می‌دهد.</div>
+
+  <div class="card" id="keyCard">
+    <label for="key">🔑 کلید Gemini API (فقط یک بار)</label>
+    <input type="password" id="key" placeholder="AIza… یا AQ.…">
+    <div class="tiny">کلید رایگان را از <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a> بگیر. کلید فقط در همین موبایل ذخیره می‌شود.</div>
+  </div>
+
+  <div class="card">
+    <details>
+      <summary class="tiny" style="font-size:14px">⚙️ تنظیمات</summary>
+      <div style="margin-top:10px" class="grid2">
+        <div><label for="subject">مضمون</label>
+          <select id="subject">
+            <option value="">عمومی</option>
+            <option>Physics (Phys110)</option>
+            <option>Statistics & Probability (STAT100)</option>
+            <option>Computer Concepts / Word</option>
+            <option>English (ENG 0011)</option>
+            <option>Thinking Skills (PSYCH101)</option>
+            <option>Python / Programming</option>
+          </select></div>
+        <div><label for="lang">زبان جواب</label>
+          <select id="lang">
+            <option value="both">زبان سؤال + توضیح دری</option>
+            <option value="same">فقط زبان سؤال</option>
+            <option value="fa">فقط دری</option>
+          </select></div>
+        <div><label for="len">اندازه‌ی جواب</label>
+          <select id="len"><option value="short">خیلی کوتاه</option><option value="mid">متوسط</option></select></div>
+        <div style="display:flex;align-items:end"><label class="toggle"><input type="checkbox" id="auto" checked> جواب خودکار</label></div>
+      </div>
+      <div style="margin-top:8px"><button class="sbtn" id="forget">پاک کردن کلید</button></div>
+    </details>
+  </div>
+
+  <div id="status">کلید را بگذار، زبان استاد را از پایین انتخاب کن و 🎙️ را بزن.</div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <b style="font-size:14px">📝 متن زنده‌ی درس</b>
+      <span><button class="sbtn" id="copyT">کاپی متن</button> <button class="sbtn" id="clearT">پاک</button></span>
+    </div>
+    <div id="transcript"><span class="empty" id="empty">اینجا حرف‌های استاد نوشته می‌شود… (روی هر جمله بزنی، جوابش می‌آید)</span><span id="partial"></span></div>
+    <div class="ask"><input type="text" id="typed" placeholder="یا سؤال را خودت بنویس…"><button id="askBtn">بپرس</button></div>
+  </div>
+
+  <div id="answers"></div>
+
+  <div class="bar"><div class="in">
+    <button id="mic">🎙️</button>
+    <div class="langs">
+      <button class="lb" data-l="ar-EG">عربی مصری</button>
+      <button class="lb" data-l="ar-SA">عربی سعودی</button>
+      <button class="lb" data-l="en-US">English</button>
+    </div>
+    <button class="btn" id="answerNow">⚡ جواب بده</button>
+  </div></div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const store = { get:k=>{try{return localStorage.getItem('dk_'+k)}catch(e){return null}}, set:(k,v)=>{try{localStorage.setItem('dk_'+k,v)}catch(e){}} };
+  const transcriptEl=$('transcript'), partialEl=$('partial'), emptyEl=$('empty'), statusEl=$('status'), micBtn=$('mic'), answersEl=$('answers');
+  const setStatus=(t,err)=>{statusEl.textContent=t;statusEl.className=err?'err':''};
+  let segs=[], busy=false, pending=null, lastAutoAt=0, want=false, rec=null, recLang=store.get('rl')||'ar-EG';
+
+  // settings
+  ['subject','lang','len'].forEach(k=>{const v=store.get(k); if(v!==null)$(k).value=v; $(k).onchange=()=>store.set(k,$(k).value)});
+  if(store.get('auto')!==null) $('auto').checked=store.get('auto')==='1';
+  $('auto').onchange=()=>store.set('auto',$('auto').checked?'1':'0');
+  const savedKey=store.get('key'); if(savedKey){$('key').value=savedKey; $('keyCard').style.display='none';}
+  $('key').onchange=()=>{store.set('key',$('key').value.trim()); if($('key').value.trim())$('keyCard').style.display='none';};
+  $('forget').onclick=()=>{store.set('key',''); $('key').value=''; $('keyCard').style.display='';};
+
+  // language buttons
+  const lbs=[...document.querySelectorAll('.lb')];
+  const paintL=()=>lbs.forEach(b=>b.classList.toggle('sel',b.dataset.l===recLang));
+  paintL();
+  lbs.forEach(b=>b.onclick=()=>{recLang=b.dataset.l; store.set('rl',recLang); paintL(); if(want&&rec){try{rec.stop()}catch(e){}}});
+
+  // speech recognition
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR) setStatus('این مرورگر تشخیص صدا ندارد. لطفاً با Google Chrome باز کن.',true);
+
+  function startRec(){
+    rec=new SR(); rec.lang=recLang; rec.continuous=true; rec.interimResults=true;
+    rec.onresult=e=>{
+      let interim='';
+      for(let i=e.resultIndex;i<e.results.length;i++){
+        const r=e.results[i], t=r[0].transcript.trim();
+        if(r.isFinal){ if(t) addSeg(t); } else interim+=t+' ';
+      }
+      partialEl.textContent=interim; scrollT();
+    };
+    rec.onerror=e=>{
+      if(e.error==='not-allowed'||e.error==='service-not-allowed'){want=false; paintMic(); setStatus('اجازه‌ی میکروفون داده نشد. اگر فایل داخل اپ Claude باز است، در Chrome بازش کن. در غیر آن از ⋮ → Settings → Site settings → Microphone اجازه بده.',true);}
+      else if(e.error==='network') setStatus('⚠️ تشخیص صدا انترنت لازم دارد.',true);
+    };
+    rec.onend=()=>{ partialEl.textContent=''; if(want){ setTimeout(()=>{ if(want){ try{startRec()}catch(e){} } },200);} else paintMic(); };
+    rec.start(); paintMic();
+  }
+  function paintMic(){ micBtn.classList.toggle('on',want); micBtn.textContent=want?'⏹':'🎙️'; if(want) setStatus('🔴 در حال گوش دادن ('+({'ar-EG':'عربی مصری','ar-SA':'عربی سعودی','en-US':'English'}[recLang])+')… صفحه را روشن نگه دار.'); }
+  micBtn.onclick=()=>{
+    if(!SR) return;
+    if(want){ want=false; try{rec.stop()}catch(e){} paintMic(); setStatus('متوقف شد.'); return; }
+    want=true; try{startRec()}catch(e){ setStatus('میکروفون شروع نشد، دوباره بزن.',true); want=false; }
+  };
+  document.addEventListener('visibilitychange',()=>{ if(document.hidden&&want) setStatus('⚠️ صفحه را باز نگه دار، وگرنه گوش دادن قطع می‌شود.',true); });
+
+  // transcript
+  function scrollT(){transcriptEl.scrollTop=transcriptEl.scrollHeight}
+  function addSeg(text){
+    emptyEl.style.display='none';
+    const el=document.createElement('span'); el.className='seg'; el.textContent=text;
+    el.onclick=()=>answer(text,el);
+    transcriptEl.insertBefore(el,partialEl); segs.push({text,el});
+    if(segs.length>400) segs.shift().el.remove();
+    scrollT();
+    if($('auto').checked && looksLikeQuestion(text)){
+      el.classList.add('q');
+      const now=Date.now(); if(now-lastAutoAt>2500){lastAutoAt=now; answer(text,el,true);}
+    }
+  }
+  function context(){let s='',i=segs.length-1; while(i>=0&&s.length<1800){s=segs[i].text+'\n'+s;i--} return s.trim()}
+  const AR=['ما','ماذا','لماذا','ليش','ليه','كيف','هل','متى','أين','وين','فين','كم','من','مين','أي','اي','ايش','إيش','وش','ايه','إيه','إزاي','ازاي','شنو','منو','ياتو','عرف','اشرح','اذكر','وضح','احسب','أوجد','اوجد','قارن','علل','الفرق','مثال'];
+  const EN=['what','why','how','which','who','whose','when','where','is','are','can','could','do','does','did','will','would','should','define','explain','calculate','find','give','name','list','compare','tell','anyone','example'];
+  function looksLikeQuestion(t){
+    const s=t.trim(); if(/[?؟]\s*$/.test(s)) return true;
+    const low=s.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu,' '); const w=low.split(/\s+/).filter(Boolean);
+    if(w.length<2) return false;
+    const f=w.slice(0,3).map(x=>x.replace(/^(و|ف|يا)(?=\S{2,})/,''));
+    if(f.some(x=>EN.includes(x)||AR.includes(x))) return true;
+    return /(ما هو|ما هي|ايش هو|وش هو|يعني ايه|مين يعرف|who knows|what is|what are|the answer)/i.test(low);
+  }
+
+  // Gemini
+  function buildPrompt(q,auto){
+    const lang=$('lang').value, len=$('len').value, subj=$('subject').value||'general university preparatory-year course';
+    const lr= lang==='same' ? 'Answer in the SAME language as the question (Arabic → clear Modern Standard Arabic; English → simple English).'
+      : lang==='fa' ? 'Answer ONLY in Dari Persian (Afghan Farsi), simple and colloquial.'
+      : 'First the answer in the SAME language as the question (Arabic → clear Modern Standard Arabic; English → simple English). Then a new line starting with "دری:" and one sentence of explanation in simple Dari Persian.';
+    const ll= len==='short' ? 'Keep it to 1–2 short sentences (a formula or number is fine).' : 'Keep it under 5 short sentences.';
+    return `You are a fast live helper for a computer-science preparatory-year student at Qassim University, sitting in a lecture.
+Course: ${subj}.
+The lecturer mixes Arabic (Egyptian, Sudanese, Saudi dialects) and English (sometimes Pakistani-accented). The transcript is automatic speech recognition and may contain errors — silently fix obvious ones from context.
+
+RECENT LECTURE TRANSCRIPT:
+"""
+${context()||'(none)'}
+"""
+
+${auto?'Latest phrase, flagged as a possible question from the lecturer':'The student wants an answer to this'}:
+"""
+${q}
+"""
+
+${auto?'If this is NOT really a question to the class (filler, an instruction, or too little to answer), reply with exactly: NOQ\n':'If unclear, answer the most likely intended question from the recent lecture.\n'}${lr}
+${ll} No preamble, no markdown, no asterisks.`;
+  }
+  const MODELS=['gemini-flash-latest','gemini-2.5-flash','gemini-2.0-flash'];
+  let modelIdx=0;
+  async function gemini(prompt){
+    const key=store.get('key')||$('key').value.trim();
+    if(!key) throw {msg:'اول کلید Gemini را در بالای صفحه بگذار.'};
+    for(;;){
+      const m=MODELS[modelIdx];
+      const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`,{
+        method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},
+        body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{temperature:0.3,maxOutputTokens:400,thinkingConfig:{thinkingBudget:0}}})
+      });
+      if(r.status===404 && modelIdx<MODELS.length-1){modelIdx++;continue;}
+      if(r.status===400){
+        const j=await r.json().catch(()=>({}));
+        const msg=(j.error&&j.error.message)||'';
+        if(/thinking/i.test(msg)){ // older model without thinkingConfig
+          const r2=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{temperature:0.3,maxOutputTokens:400}})});
+          return parse(r2);
+        }
+        if(/API key|credential|auth/i.test(msg)) throw {msg:'کلید Gemini درست نیست. از تنظیمات پاکش کن و دوباره بگذار.'};
+        throw {msg:'خطا: '+msg.slice(0,120)};
+      }
+      return parse(r);
+    }
+  }
+  async function parse(r){
+    if(r.status===429) throw {msg:'⏳ درخواست‌ها زیاد شد، چند ثانیه صبر کن.',rate:true};
+    if(r.status===401||r.status===403) throw {msg:'کلید Gemini قبول نشد ('+r.status+'). از تنظیمات پاکش کن و دوباره کاپی کن.'};
+    if(!r.ok) throw {msg:'جواب نیامد ('+r.status+'). دوباره روی جمله بزن.'};
+    const j=await r.json();
+    const p=j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts;
+    return (p||[]).map(x=>x.text||'').join('').trim();
+  }
+
+  function newCard(q){
+    const c=document.createElement('div'); c.className='ans';
+    c.innerHTML='<div class="q"></div><div class="a thinking">در حال فکر…</div><div class="meta"><span class="t"></span><button class="sbtn">کاپی</button></div>';
+    c.querySelector('.q').textContent='❓ '+q;
+    c.querySelector('.t').textContent=new Date().toLocaleTimeString('fa-AF',{hour:'2-digit',minute:'2-digit'});
+    c.querySelector('button').onclick=e=>navigator.clipboard.writeText(c.querySelector('.a').textContent).then(()=>e.target.textContent='✓',()=>{});
+    answersEl.prepend(c); return c;
+  }
+  async function answer(q,segEl,auto=false){
+    if(busy){pending={q,segEl,auto};return}
+    busy=true; let card=auto?null:newCard(q);
+    try{
+      const t=await gemini(buildPrompt(q,auto));
+      if(auto && /^NOQ\b/.test(t)){ if(segEl) segEl.classList.remove('q'); }
+      else { if(!card) card=newCard(q); const a=card.querySelector('.a'); a.classList.remove('thinking'); a.textContent=t||'(جواب خالی آمد)'; }
+    }catch(err){
+      if(!card) card=newCard(q);
+      const a=card.querySelector('.a'); a.classList.remove('thinking'); a.textContent=(err&&err.msg)||'اتصال انترنت را چک کن و دوباره بزن.';
+      if(err&&err.rate) lastAutoAt=Date.now()+15000;
+    }finally{
+      busy=false; if(pending){const p=pending;pending=null;answer(p.q,p.segEl,p.auto)}
+    }
+  }
+
+  $('answerNow').onclick=()=>{
+    const last=(segs.slice(-3).map(s=>s.text).join(' ')+' '+partialEl.textContent).trim();
+    if(!last){setStatus('هنوز چیزی شنیده نشده.',true);return}
+    answer(last,null,false);
+  };
+  $('askBtn').onclick=()=>{const v=$('typed').value.trim(); if(v){answer(v,null,false); $('typed').value=''}};
+  $('typed').onkeydown=e=>{if(e.key==='Enter')$('askBtn').click()};
+  $('copyT').onclick=e=>navigator.clipboard.writeText(segs.map(s=>s.text).join('\n')).then(()=>e.target.textContent='✓ کاپی شد',()=>{});
+  $('clearT').onclick=()=>{segs.forEach(s=>s.el.remove()); segs=[]; emptyEl.style.display=''};
+})();
+</script>
+</body>
+</html>
